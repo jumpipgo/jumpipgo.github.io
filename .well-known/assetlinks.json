@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.jumpipgo.meso",
+      "sha256_cert_fingerprints": ["8086E202EAEA1B4FB5B96CD40134870277CB6D2EB35C3C2FF3373874CA530D00"]
+    }
+  }
+]
