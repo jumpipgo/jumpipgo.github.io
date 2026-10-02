@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ru" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Зум выключен намеренно: щипок двумя пальцами во время подхода
+         увеличивал интерфейс, и вернуть его было нечем — приложение
+         рассчитано на одну колонку. `maximum-scale=1` работает в Chrome
+         (веб-режим и TWA), `user-scalable=no` оставлен для старых
+         версий. iOS Safari оба атрибута игнорирует с iOS 10 — там
+         зум отключить нельзя, это решение Apple про доступность. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <!-- color-scheme обязателен: приложение умеет светлую тему, а без него
+         браузер рисует системные элементы (скроллбары, поля форм) тёмными
+         поверх светлого фона. -->
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="description" content="МЕЗО — офлайн-трекер тренировок: журнал подходов, вес, повторы, отдых. Работает без интернета." />
+    <!-- Иконка для iOS: без неё «На экран „Домой“» делает скриншот страницы -->
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <!-- Установка на экран в iOS. Без этих трёх подсказок Safari открывает
+         приложение с адресной строкой и кнопками браузера, то есть от
+         приложения остаётся только вкладка. Проверено чтением, не измерением:
+         iOS-устройства под рукой нет. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="МЕЗО" />
+    <link rel="icon" type="image/svg+xml" href="./icons/icon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="МЕЗО · Классический сплит" />
+    <meta property="og:description" content="Офлайн-трекер тренировок" />
+    <meta property="og:image" content="https://jumpipgo.github.io/TREN/icons/icon-512.png" />
+    <meta name="twitter:card" content="summary" />
+    <title>МЕЗО · Классический сплит</title>
+
+    <!--
+      Критические стили до загрузки основного CSS: тёмный фон (чтобы не было
+      белого кадра) и каркас главного экрана. React заменяет #root сразу после
+      монтирования, поэтому каркас виден только на время загрузки бандла.
+      Повторяет структуру главной: шапка, кольцо прогресса, карточка тренировки.
+    -->
+    <style>
+      html, body { margin: 0; background: #000; }
+      .sk { border-radius: 18px; background: #10141B; position: relative; overflow: hidden; }
+      .sk::after {
+        content: ''; position: absolute; inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .055), transparent);
+        animation: sk-shimmer 1.3s ease-in-out infinite;
+      }
+      @keyframes sk-shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+      @media (prefers-reduced-motion: reduce) { .sk::after { animation: none; } }
+      .sk-wrap { padding: 18px 16px 120px; display: flex; flex-direction: column; gap: 16px; }
+      .sk-top { display: flex; justify-content: space-between; align-items: center; }
+      .sk-logo { width: 92px; height: 20px; border-radius: 8px; }
+      .sk-btn { width: 48px; height: 48px; border-radius: 14px; }
+      .sk-ring { width: min(240px, 68vw); aspect-ratio: 1; border-radius: 50%; margin: 8px auto 4px; }
+      .sk-label { width: 44%; height: 11px; border-radius: 6px; }
+      .sk-title { width: 62%; height: 30px; border-radius: 10px; }
+      .sk-line { height: 13px; border-radius: 6px; }
+      .sk-line.s90 { width: 90%; } .sk-line.s70 { width: 70%; } .sk-line.s45 { width: 45%; }
+      .sk-card { padding: 18px 16px; display: flex; flex-direction: column; gap: 10px; }
+      .sk-cta { height: 56px; border-radius: 16px; background: #1a1f14; }
+      [data-theme='light'] .sk { background: #FFFFFF; }
+      [data-theme='light'] .sk::after { background: linear-gradient(90deg, transparent, rgba(23, 34, 41, .045), transparent); }
+      [data-theme='light'] .sk-cta { background: #EAF0D8; }
+    </style>
+    <script>
+      // Тема и уровень эффектов применяются до первой отрисовки, иначе каркас
+      // мигнёт не той темой, а размытие появится на кадр позже. Оба значения
+      // лежат в записи открытым текстом — ровно ради этого случая.
+      (function () {
+        try {
+          var raw = localStorage.getItem('meso.classic-split.v1');
+          var env = raw ? JSON.parse(raw) : null;
+          if (env && env.theme === 'light') {
+            document.documentElement.dataset.theme = 'light';
+            document.documentElement.style.background = '#F2F5F4';
+          }
+          var fx = env && (env.fx === 'lite' || env.fx === 'off') ? env.fx : null;
+          // Системная просьба «меньше прозрачности» — тот же путь, что и в
+          // контексте: пока человек ничего не выбрал, выигрывает она.
+          if (!fx && !env) {
+            if (matchMedia('(prefers-reduced-transparency: reduce)').matches) fx = 'off';
+          } else if (!fx && env.fx === undefined) {
+            if (matchMedia('(prefers-reduced-transparency: reduce)').matches) fx = 'off';
+          }
+          if (fx) document.documentElement.dataset.fx = fx;
+        } catch (e) { /* приватный режим — остаёмся на тёмной без эффектов */ }
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-BrS6_MsH.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-ChzoZ0pn.css">
+  </head>
+  <body>
+    <div id="root">
+      <div class="sk-wrap" aria-hidden="true">
+        <div class="sk-top">
+          <div class="sk sk-logo"></div>
+          <div class="sk sk-btn"></div>
+        </div>
+        <div class="sk sk-ring"></div>
+        <div class="sk sk-label"></div>
+        <div class="sk sk-title"></div>
+        <div class="sk sk-line s70"></div>
+        <div class="sk sk-line s90"></div>
+        <div class="sk sk-card">
+          <div class="sk sk-line s45"></div>
+          <div class="sk sk-line s90"></div>
+          <div class="sk sk-line s70"></div>
+          <div class="sk sk-cta"></div>
+        </div>
+      </div>
+    </div>
+    <noscript>
+      <p style="margin:0;padding:32px 24px;color:#bebebe;font:16px/1.6 system-ui,sans-serif;text-align:center">
+        Для работы МЕЗО нужен JavaScript. Включите его в настройках браузера.
+      </p>
+    </noscript>
+  </body>
+</html>
