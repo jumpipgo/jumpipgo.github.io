@@ -80,13 +80,28 @@
           // Фон и цвет панели берутся из каскада CSS, а не из таблицы в
           // скрипте: девять значений в двух местах разъехались бы при первой
           // же правке палитры, и заставка показала бы чужой цвет.
-          var cs = getComputedStyle(document.documentElement);
-          var bg = cs.getPropertyValue('--bg').trim();
-          if (bg) {
+          // Фон и цвет панели берутся из каскада CSS, а не из таблицы здесь:
+          // девять значений в двух местах разъехались бы при первой правке
+          // палитры, и заставка показала бы чужой фон.
+          //
+          // Но встроенный скрипт выполняется в <head> раньше, чем разобран
+          // <link rel="stylesheet">: в собранном index.html стиль стоит ниже
+          // скрипта, и на этом шаге `--bg` ещё пуст. Замерено на устройстве:
+          // панель оставалась #000000, пока фон палитры был #140A08, и стык
+          // панели с подложкой был виден. Поэтому читаем каскад, когда он
+          // доступен, а если нет — повторяем после разбора документа, и до
+          // этого держим запасное значение, чтобы заставка не мигала.
+          var ЗАПАСНЫЕ = { dark: '#000000', light: '#F2F5F4' };
+          var применить = function () {
+            var cs = getComputedStyle(document.documentElement);
+            var bg = cs.getPropertyValue('--bg').trim() ||
+              ЗАПАСНЫЕ[document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'];
             document.documentElement.style.background = bg;
             var metas = document.querySelectorAll('meta[name="theme-color"]');
             for (var i = 0; i < metas.length; i++) metas[i].setAttribute('content', bg);
-          }
+          };
+          применить();
+          document.addEventListener('DOMContentLoaded', применить);
           var fx = env && (env.fx === 'lite' || env.fx === 'off') ? env.fx : null;
           // Системная просьба «меньше прозрачности» — тот же путь, что и в
           // контексте: пока человек ничего не выбрал, выигрывает она.
