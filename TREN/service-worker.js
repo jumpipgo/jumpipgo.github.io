@@ -3,7 +3,7 @@
 // service-worker.js не менялись от деплоя к деплою — значит, не запускались ни
 // install, ни activate, и чистка старых assets/index-*.js|css не выполнялась
 // никогда: кэш рос, а комментарий ниже описывал поведение, которого не было.
-const CACHE_NAME = 'meso-pwa-v6-c4624812fb5e';
+const CACHE_NAME = 'meso-pwa-v6-81c7490e5fd6';
 const APP_SHELL = [
   './',
   './index.html',
