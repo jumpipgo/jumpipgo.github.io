@@ -3,7 +3,11 @@
 // service-worker.js не менялись от деплоя к деплою — значит, не запускались ни
 // install, ни activate, и чистка старых assets/index-*.js|css не выполнялась
 // никогда: кэш рос, а комментарий ниже описывал поведение, которого не было.
-const CACHE_NAME = 'meso-pwa-v6-92118f45b30c';
+const CACHE_PREFIX = 'meso-pwa-v6';
+// Имя получает отпечаток сборки (scripts/stamp-sw.mjs). Префикс отделяет
+// тестовую сборку от продовой: на одном origin (`jumpipgo.github.io`) чистка
+// `activate` иначе удаляла бы чужой кэш вместе со своим.
+const CACHE_NAME = CACHE_PREFIX + '-1bb2c63462d0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -63,7 +67,9 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
+      .then(keys => Promise.all(keys
+        .filter(key => key.startsWith(CACHE_PREFIX + '-') && key !== CACHE_NAME)
+        .map(key => caches.delete(key))))
       // Ранее ушедшие из оборота assets/index-*.js|css копились в кэше
       // вечно: имя кэша постоянное, а файлы с хешами меняются каждый деплой.
       .then(() => buildAssetList())
@@ -89,6 +95,12 @@ self.addEventListener('message', event => {
   if (event.data === 'skip-waiting') self.skipWaiting();
 });
 
+/** Ищем только в своём кэше: на одном origin могут жить прод и тест. */
+async function matchOwn(request) {
+  const cache = await caches.open(CACHE_NAME);
+  return cache.match(request);
+}
+
 async function networkFirst(request, fallbackToIndex = false) {
   try {
     const response = await fetch(request, { cache: 'no-cache' });
@@ -98,15 +110,15 @@ async function networkFirst(request, fallbackToIndex = false) {
     }
     return response;
   } catch {
-    const cached = await caches.match(request);
+    const cached = await matchOwn(request);
     if (cached) return cached;
-    if (fallbackToIndex) return caches.match('./index.html');
+    if (fallbackToIndex) return matchOwn('./index.html');
     throw new Error('Нет сети и нет кэшированного ресурса');
   }
 }
 
 async function cacheFirst(request) {
-  const cached = await caches.match(request);
+  const cached = await matchOwn(request);
   if (cached) return cached;
   const response = await fetch(request);
   if (response.ok) {
