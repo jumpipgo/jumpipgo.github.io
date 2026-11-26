@@ -7,7 +7,7 @@ const CACHE_PREFIX = 'meso-pwa-v6';
 // Имя получает отпечаток сборки (scripts/stamp-sw.mjs). Префикс отделяет
 // тестовую сборку от продовой: на одном origin (`jumpipgo.github.io`) чистка
 // `activate` иначе удаляла бы чужой кэш вместе со своим.
-const CACHE_NAME = CACHE_PREFIX + '-a3a3247558dc';
+const CACHE_NAME = CACHE_PREFIX + '-1ced05d1c6e1';
 const APP_SHELL = [
   './',
   './index.html',
