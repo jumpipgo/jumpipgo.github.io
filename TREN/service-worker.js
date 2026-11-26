@@ -7,7 +7,7 @@ const CACHE_PREFIX = 'meso-pwa-v6';
 // Имя получает отпечаток сборки (scripts/stamp-sw.mjs). Префикс отделяет
 // тестовую сборку от продовой: на одном origin (`jumpipgo.github.io`) чистка
 // `activate` иначе удаляла бы чужой кэш вместе со своим.
-const CACHE_NAME = CACHE_PREFIX + '-44c4f7b49245';
+const CACHE_NAME = CACHE_PREFIX + '-a3a3247558dc';
 const APP_SHELL = [
   './',
   './index.html',
@@ -16,7 +16,13 @@ const APP_SHELL = [
   './bg/dots.svg',
   './icons/icon.svg',
   './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  // Шрифты не фигурируют в разборе index.html — их urls лежат в inline-стиле,
+  // поэтому в precache их надо перечислить явно, иначе офлайн будет системным.
+  './fonts/manrope-cyrillic.woff2',
+  './fonts/manrope-latin.woff2',
+  './fonts/unbounded-cyrillic.woff2',
+  './fonts/unbounded-latin.woff2'
 ];
 
 /**
