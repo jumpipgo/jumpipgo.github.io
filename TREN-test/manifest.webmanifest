@@ -1,26 +1,19 @@
 {
   "id": "./",
-  "name": "МЕЗО · Тест нового цикла",
-  "short_name": "МЕЗО тест",
+  "name": "МЕЗО · Классический сплит",
+  "short_name": "МЕЗО",
   "description": "Офлайн-трекер тренировок МЕЗО",
   "lang": "ru",
   "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "prefer_related_applications": false,
   "background_color": "#000000",
   "theme_color": "#000000",
-  "categories": [
-    "fitness",
-    "health",
-    "lifestyle"
-  ],
+  "categories": ["fitness", "health", "lifestyle"],
   "icons": [
     {
       "src": "./icons/icon-192.png",
